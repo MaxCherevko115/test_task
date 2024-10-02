@@ -2,7 +2,8 @@
 
 namespace App\Service;
 
-use App\DTO\UserDTO;
+use App\DTO\StoreUserDTO;
+use App\DTO\UpdateUserDTO;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -15,7 +16,7 @@ class UserService
         $this->entityManager = $entityManager;
     }
 
-    public function store(UserDTO $userDTO): User
+    public function store(StoreUserDTO $userDTO): User
     {
         $user = new User(
             $userDTO->login,
@@ -25,6 +26,19 @@ class UserService
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
+
+        return $user;
+    }
+
+    public function update(UpdateUserDTO $userDTO, User $user): User
+    {
+        foreach($userDTO as $key => $value) {
+            $method = 'set' . ucfirst($key);
+
+            if ($value !== null && method_exists($user, $method)) {
+                $user->$method($value);
+            }
+        }
 
         return $user;
     }

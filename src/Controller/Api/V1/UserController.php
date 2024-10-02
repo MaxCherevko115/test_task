@@ -2,7 +2,8 @@
 
 namespace App\Controller\Api\V1;
 
-use App\DTO\UserDTO;
+use App\DTO\StoreUserDTO;
+use App\DTO\UpdateUserDTO;
 use App\Entity\User;
 use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,7 +23,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/user', name: 'user_store', methods: ['POST'])]
-    public function store(#[MapRequestPayload] UserDTO $userDTO, UserService $userService): JsonResponse
+    public function store(#[MapRequestPayload] StoreUserDTO $userDTO, UserService $userService): JsonResponse
     {
         $user = $userService->store($userDTO);
 
@@ -34,7 +35,19 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/user/{id}', name: 'user_show', methods: ['GET'])]
+    #[Route('/user/{user}', name: 'user_update', methods: ['PUT'])]
+    public function update(#[MapRequestPayload] UpdateUserDTO $userDTO, User $user, UserService $userService): JsonResponse
+    {
+        $user = $userService->update($userDTO, $user);
+
+        return $this->json([
+            'login' => $user->getLogin(),
+            'phone' => $user->getPhone(),
+            'password' => $user->getPassword(),
+        ]);
+    }
+
+    #[Route('/user/{user}', name: 'user_show', methods: ['GET'])]
     public function show(User $user): JsonResponse
     {
         return $this->json([
@@ -44,7 +57,7 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/user/{id}', name: 'user_delete', methods: ['DELETE'])]
+    #[Route('/user/{user}', name: 'user_delete', methods: ['DELETE'])]
     public function delete(User $user, UserService $userService): JsonResponse
     {
         $userService->delete($user);
