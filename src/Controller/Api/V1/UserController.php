@@ -10,19 +10,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class UserController extends AbstractController
 {
-    #[Route('/users', name: 'user_index', methods: ['GET'])]
-    public function index(): JsonResponse
-    {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/UserController.php',
-        ]);
-    }
-
-    #[Route('/user', name: 'user_store', methods: ['POST'])]
+    #[Route('/api/v1/user', name: 'user_store', methods: ['POST'])]
+    #[IsGranted('ROLE_ADMIN')]
     public function store(#[MapRequestPayload] StoreUserDTO $userDTO, UserService $userService): JsonResponse
     {
         $user = $userService->store($userDTO);
@@ -35,21 +28,23 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/user/{user}', name: 'user_update', methods: ['PUT'])]
+    #[Route('/api/v1/user/{user}', name: 'user_update', methods: ['PUT'])]
     public function update(#[MapRequestPayload] UpdateUserDTO $userDTO, User $user, UserService $userService): JsonResponse
     {
+        $this->denyAccessUnlessGranted('USER_UPDATE', $user);
+
         $user = $userService->update($userDTO, $user);
 
         return $this->json([
-            'login' => $user->getLogin(),
-            'phone' => $user->getPhone(),
-            'password' => $user->getPassword(),
+            'id' => $user->getId(),
         ]);
     }
 
-    #[Route('/user/{user}', name: 'user_show', methods: ['GET'])]
+    #[Route('/api/v1/user/{user}', name: 'user_show', methods: ['GET'])]
     public function show(User $user): JsonResponse
     {
+        $this->denyAccessUnlessGranted('USER_SHOW', $user);
+
         return $this->json([
             'login' => $user->getLogin(),
             'phone' => $user->getPhone(),
@@ -57,9 +52,11 @@ class UserController extends AbstractController
         ]);
     }
 
-    #[Route('/user/{user}', name: 'user_delete', methods: ['DELETE'])]
+    #[Route('/api/v1/user/{user}', name: 'user_delete', methods: ['DELETE'])]
     public function delete(User $user, UserService $userService): JsonResponse
     {
+        $this->denyAccessUnlessGranted('USER_DELETE', $user);
+
         $userService->delete($user);
 
         return $this->json([]);

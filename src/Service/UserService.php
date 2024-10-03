@@ -40,11 +40,20 @@ class UserService
             }
         }
 
+        $this->entityManager->flush();
+
         return $user;
     }
 
     public function delete(User $user): void
     {
         $this->entityManager->remove($user);
+        $this->entityManager->flush();
+    }
+
+    public function addRole(User $user, array $role): void
+    {
+        $user->setRoles($role);
+        $this->entityManager->flush();
     }
 }
